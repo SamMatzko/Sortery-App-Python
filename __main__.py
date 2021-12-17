@@ -4,5 +4,6 @@ import app
 import sys
 
 # Run the app
-application = app.App()
-application.run(sys.argv)
+application = app.QApplication([])
+window = app.Window()
+application.exec_()
