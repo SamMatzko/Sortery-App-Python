@@ -107,6 +107,34 @@ class Window(QMainWindow):
 
         self.modified_radiobutton.setChecked(True)
 
+        # The exclude type entry
+        exclude_tooltip = (
+            "File extensions (like .jpg, .mp4, etc.) to exclude from sorting.\n"
+            'Separate each extension with a dash, for example: "jpg-mp4".'
+        )
+        self.exclude_type_label = QLabel("Exclude Type(s):")
+        self.exclude_type_label.setToolTip(exclude_tooltip)
+        self.exclude_type_entry = QLineEdit()
+        self.exclude_type_entry.setToolTip(exclude_tooltip)
+        self.exclude_type_label.setBuddy(self.exclude_type_entry)
+        self.options_layout.addWidget(self.exclude_type_label, 3, 0)
+        self.options_layout.addWidget(self.exclude_type_entry, 3, 1)
+
+        # The only type entry
+        only_tooltip = (
+            "File extensions (like .jpg, .mp4, etc.) to excluively sort.\n"
+            "All other files types will be ignored during sorting.\n"
+            'Separate each extension with a dash, for example: "jpg-mp4".\n'
+            'This option overrides the "exclude type" option.'
+        )
+        self.only_type_label = QLabel("Only Type(s):")
+        self.only_type_label.setToolTip(only_tooltip)
+        self.only_type_entry = QLineEdit()
+        self.only_type_entry.setToolTip(only_tooltip)
+        self.only_type_label.setBuddy(self.only_type_entry)
+        self.options_layout.addWidget(self.only_type_label, 4, 0)
+        self.options_layout.addWidget(self.only_type_entry, 4, 1)
+
     def create_dir_choosers(self):
         """Create the source and target directory choosers."""
 
@@ -146,4 +174,45 @@ class Window(QMainWindow):
         # The start button
         self.start_button = QPushButton("St&art")
         self.start_button.setEnabled(False)
+        self.start_button.clicked.connect(self.start)
         self.main_layout.addWidget(self.start_button, 3, 0)
+
+    def start(self):
+        """Run the sorting algorithm with the user's custom options."""
+
+        # Get the command-line options
+        if self.created_radiobutton.isChecked():
+            date_type = "c"
+        elif self.accessed_radiobutton.isChecked():
+            date_type = "a"
+        else:
+            date_type = "m"
+
+        if self.preserve_name_checkbox.isChecked():
+            preserve_name = "--preserve-name"
+        else:
+            preserve_name = ""
+
+        if self.date_format_chooser.currentIndex() == 0:
+            date_format = "%Y-%m-%d %Hh%Mm%Ss"
+        elif self.date_format_chooser.currentIndex() == 1:
+            date_format = ""
+
+        exclude_type = ""
+        only_type = ""
+        if self.exclude_type_entry.text() != "":
+            exclude_type = '--exclude-type="{}"'.format(self.exclude_type_entry.text().strip())
+        if self.only_type_entry.text() != "":
+            only_type = '--only-type="{}"'.format(self.only_type_entry.text().strip())
+
+        # Run the command
+        command = 'sortery "{}" "{}" sort {} --date-type="{}" --date-format="{}" {} {}'.format(
+            self.source,
+            self.target,
+            preserve_name,
+            date_type,
+            date_format,
+            exclude_type,
+            only_type
+        )
+        print(command)
