@@ -215,4 +215,4 @@ class Window(QMainWindow):
             exclude_type,
             only_type
         )
-        print(command)
+        os.system(command)
